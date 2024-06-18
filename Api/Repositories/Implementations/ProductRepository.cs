@@ -1,42 +1,51 @@
+using Api.Data;
 using Api.Repositories.Interfaces;
+using Microsoft.EntityFrameworkCore;
 using Models.Entities;
 
 namespace Api.Repositories.Implementations;
 
-public class ProductRepository : IProductRepository
+public class ProductRepository(AppDbContext appDbContext) : IProductRepository
 {
-    public Task<List<Product>> GetAllProducts()
+    public async Task<IEnumerable<Product>> GetAllProducts()
     {
-        throw new NotImplementedException();
+        return await appDbContext
+            .Products
+            .ToListAsync();
     }
 
-    public Task<List<Product>> GetProductsByName(string name)
+    public async Task<IEnumerable<Product>> GetProductsByName(string name)
     {
-        throw new NotImplementedException();
+        return await appDbContext
+            .Products
+            .Where(x => x.Name == name)
+            .ToListAsync();
     }
 
-    public Task<List<Product>> GetProductsByCategoryAndPrice(string category, decimal price)
+    public async Task<IEnumerable<Product>> GetProductsByCategoryAndPrice(string category, decimal price)
     {
-        throw new NotImplementedException();
+        return await appDbContext
+            .Products
+            .Where(x => x.Category == category && x.Price >= price)
+            .ToListAsync();
     }
 
-    public Task<Product?> GetProductById(Guid id)
+    public async Task<Product?> GetProductById(Guid id)
     {
-        throw new NotImplementedException();
+        return await appDbContext
+            .Products
+            .FindAsync(id);
     }
 
-    public Task AddProduct(Product product)
+    public async Task AddProduct(Product product)
     {
-        throw new NotImplementedException();
+        if(await DoesProductWithSkuExist(product.Sku)) return;
+        await appDbContext.Products.AddAsync(product);
+        await appDbContext.SaveChangesAsync();
     }
 
-    public Task UpdateProduct(Product product)
+    public async Task<bool> DoesProductWithSkuExist(string sku)
     {
-        throw new NotImplementedException();
-    }
-
-    public Task DeleteProduct(Guid id)
-    {
-        throw new NotImplementedException();
+        return await appDbContext.Products.FirstOrDefaultAsync(x => x.Sku == sku) is not null;
     }
 }

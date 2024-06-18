@@ -12,7 +12,7 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace Api.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    [Migration("20240617210043_Initial")]
+    [Migration("20240618144117_Initial")]
     partial class Initial
     {
         /// <inheritdoc />
@@ -33,7 +33,8 @@ namespace Api.Migrations
 
                     b.Property<string>("ImageUrl")
                         .IsRequired()
-                        .HasColumnType("text");
+                        .HasMaxLength(2000)
+                        .HasColumnType("character varying(2000)");
 
                     b.Property<Guid?>("ProductId")
                         .HasColumnType("uuid");
@@ -53,7 +54,8 @@ namespace Api.Migrations
 
                     b.Property<string>("Category")
                         .IsRequired()
-                        .HasColumnType("text");
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)");
 
                     b.Property<string>("Description")
                         .IsRequired()
@@ -62,7 +64,8 @@ namespace Api.Migrations
 
                     b.Property<string>("Name")
                         .IsRequired()
-                        .HasColumnType("text");
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)");
 
                     b.Property<decimal>("Price")
                         .HasColumnType("numeric");

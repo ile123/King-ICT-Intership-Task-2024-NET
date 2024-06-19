@@ -1,4 +1,5 @@
 using Models.Dtos;
+using Models.Entities;
 
 namespace Api.Services.Interfaces;
 
@@ -12,7 +13,7 @@ public interface IProductService
 
     Task<ApiResponseDto<ProductDto?>> GetProductById(Guid id);
 
-    Task<ApiResponseDto<Guid>> AddProduct(AddProductDto productDto);
+    Task AddProduct(AddProductDto productDto);
     bool ValidateProduct(AddProductDto productDto);
     
 }

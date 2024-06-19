@@ -4,5 +4,5 @@ namespace Api.Services.Interfaces;
 
 public interface IExternalApiService
 {
-    Task<IEnumerable<ProductDto>> GetDataFromApi(string baseUrl, string endpoint);
+    Task<List<AddProductDto>> GetDataFromApi(string baseUrl, string endpoint);
 }

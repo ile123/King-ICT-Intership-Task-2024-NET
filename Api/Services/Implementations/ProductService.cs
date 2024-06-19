@@ -3,6 +3,7 @@ using Api.Services.Interfaces;
 using AutoMapper;
 using Models.Dtos;
 using Models.Entities;
+using Serilog;
 
 namespace Api.Services.Implementations;
 
@@ -37,40 +38,38 @@ public class ProductService(IProductRepository productRepository, IMapper mapper
         }
         catch (Exception e)
         {
-            //Logger here
+            Log.Error(e.Message);
             return new ApiResponseDto<ProductDto?>(false, e.Message, new ProductDto(Guid.Empty, "", 0.0m, "", "", "", []));
         }
     }
 
-    public async Task<ApiResponseDto<Guid>> AddProduct(AddProductDto productDto)
+    public async Task AddProduct(AddProductDto productDto)
     {
         try
         {
-            if (!ValidateProduct(productDto))
-                throw new Exception("ERROR: Invalid product tried to be saved to the db!");
+            if (!ValidateProduct(productDto)) return;
             var images = productDto.Images.Select(imageUrl => new Image { ImageUrl = imageUrl }).ToList();
             var newProduct = new Product
             {
-                Name = productDto.Name,
+                Title = productDto.Title,
                 Price = productDto.Price,
                 Description = productDto.Description,
                 Category = productDto.Category,
+                Sku = productDto.Sku,
                 Images = images
             };
             await productRepository.AddProduct(newProduct);
-            return new ApiResponseDto<Guid>(true, "Product created successfully!", newProduct.Id);
         }
         catch (Exception e)
         {
-            //Logger here
-            return new ApiResponseDto<Guid>(false, e.Message, Guid.Empty);
+            Log.Error(e.Message);
         }
     }
 
     public bool ValidateProduct(AddProductDto productDto)
     {
-        if(string.IsNullOrEmpty(productDto.Name) || string.IsNullOrWhiteSpace(productDto.Name)) return false;
-        if(string.IsNullOrEmpty(productDto.Description) || string.IsNullOrWhiteSpace(productDto.Description)) return false;
+        if(string.IsNullOrEmpty(productDto.Title) || string.IsNullOrWhiteSpace(productDto.Title)) return false;
+        if(string.IsNullOrEmpty(productDto.Description) || string.IsNullOrWhiteSpace(productDto.Description) || productDto.Description.Length > 100) return false;
         if(string.IsNullOrEmpty(productDto.Category) || string.IsNullOrWhiteSpace(productDto.Category)) return false;
         if(string.IsNullOrEmpty(productDto.Sku) || string.IsNullOrWhiteSpace(productDto.Sku)) return false;
         if (productDto.Images.Count == 0) return false;

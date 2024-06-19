@@ -11,14 +11,16 @@ public class ProductRepository(AppDbContext appDbContext) : IProductRepository
     {
         return await appDbContext
             .Products
+            .Include(x => x.Images)
             .ToListAsync();
     }
 
-    public async Task<IEnumerable<Product>> GetProductsByName(string name)
+    public async Task<IEnumerable<Product>> GetProductsByName(string title)
     {
         return await appDbContext
             .Products
-            .Where(x => x.Name == name)
+            .Where(x => EF.Functions.Like(x.Title, $"%{title}%"))
+            .Include(x => x.Images)
             .ToListAsync();
     }
 
@@ -26,7 +28,8 @@ public class ProductRepository(AppDbContext appDbContext) : IProductRepository
     {
         return await appDbContext
             .Products
-            .Where(x => x.Category == category && x.Price >= price)
+            .Where(x => x.Category == category && price >= x.Price)
+            .Include(x => x.Images)
             .ToListAsync();
     }
 
@@ -34,7 +37,8 @@ public class ProductRepository(AppDbContext appDbContext) : IProductRepository
     {
         return await appDbContext
             .Products
-            .FindAsync(id);
+            .Include(x => x.Images)
+            .FirstOrDefaultAsync(x => x.Id == id);
     }
 
     public async Task AddProduct(Product product)

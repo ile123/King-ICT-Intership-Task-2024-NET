@@ -1,6 +1,8 @@
 using Api.Services.Interfaces;
 using Microsoft.AspNetCore.Mvc;
 using Models.Dtos;
+using Models.Entities;
+using Serilog;
 
 namespace Api.Controllers;
 
@@ -19,12 +21,12 @@ public class ProductController(IProductService productService, IExternalApiServi
         }
         catch (Exception e)
         {
-            //Logger here
+            Log.Error(e.Message);
             return StatusCode(500, new ApiResponseDto<IEnumerable<ProductDto>>(false, e.Message, new List<ProductDto>()));
         }
     }
 
-    [HttpGet("fetch-data-external-api")]
+    [HttpGet("fetch-data-from-api")]
     public async Task<ActionResult<ApiResponseDto<string>>> GetDataFromApi(
         [FromQuery] string baseUrl = "",
         [FromQuery] string endpoint = "")
@@ -34,16 +36,19 @@ public class ProductController(IProductService productService, IExternalApiServi
             var externalApiData = await externalApiService.GetDataFromApi(baseUrl, endpoint);
             if (!externalApiData.Any())
                 throw new Exception("ERROR: Fetching data from a external API has failed!");
-
+            foreach (var productDto in externalApiData)
+            {
+                await productService.AddProduct(productDto);
+            }
             return Ok(new ApiResponseDto<string>(true, "Data fetched successfully!", "Data stored successfully!"));
         }
         catch (Exception e)
         {
-            //Logger here
+            Log.Error(e.Message);
             return StatusCode(500, new ApiResponseDto<IEnumerable<ProductDto>>(false, e.Message, new List<ProductDto>()));
         }
     }
-    
+
     [HttpGet("category-and-price")]
     public async Task<ActionResult<ApiResponseDto<IEnumerable<ProductDto>>>> GetAllProductsByCategoryAndPrice(
         [FromQuery] string category = "",
@@ -57,11 +62,11 @@ public class ProductController(IProductService productService, IExternalApiServi
         }
         catch (Exception e)
         {
-            //Logger here
+            Log.Error(e.Message);
             return StatusCode(500, new ApiResponseDto<IEnumerable<ProductDto>>(false, e.Message, new List<ProductDto>()));
         }
     }
-    
+
     [HttpGet("name")]
     public async Task<ActionResult<ApiResponseDto<IEnumerable<ProductDto>>>> GetAllProductsByName(
         [FromQuery] string name = "")
@@ -74,11 +79,10 @@ public class ProductController(IProductService productService, IExternalApiServi
         }
         catch (Exception e)
         {
-            //Logger here
             return StatusCode(500, new ApiResponseDto<IEnumerable<ProductDto>>(false, e.Message, new List<ProductDto>()));
         }
     }
-    
+
     [HttpGet("{productId:guid}")]
     public async Task<ActionResult<ApiResponseDto<IEnumerable<ProductDto>>>> GetAllProductsById(Guid productId)
     {
@@ -90,7 +94,6 @@ public class ProductController(IProductService productService, IExternalApiServi
         }
         catch (Exception e)
         {
-            //Logger here
             return StatusCode(500, new ApiResponseDto<IEnumerable<ProductDto>>(false, e.Message, new List<ProductDto>()));
         }
     }

@@ -19,7 +19,7 @@ public class ProductRepository(AppDbContext appDbContext) : IProductRepository
     {
         return await appDbContext
             .Products
-            .Where(x => EF.Functions.Like(x.Title, $"%{title}%"))
+            .Where(x => EF.Functions.Like(x.Title.ToLower(), $"%{title}%".ToLower()))
             .Include(x => x.Images)
             .ToListAsync();
     }
@@ -28,7 +28,7 @@ public class ProductRepository(AppDbContext appDbContext) : IProductRepository
     {
         return await appDbContext
             .Products
-            .Where(x => x.Category == category && price >= x.Price)
+            .Where(x => x.Category.ToLower() == category.ToLower() && price >= x.Price)
             .Include(x => x.Images)
             .ToListAsync();
     }

@@ -8,6 +8,3 @@ services:
       - POSTGRES_DB=product
     ports:
       - "5432:5432"
-
-#sudo docker compose -f product_db.yml -p product up --build (how to run the file)
-#dotnet ef database update --project Api/Api.csproj --startup-project Api/Api.csproj --context Api.Data.AppDbContext --configuration Debug <name_of_migration>

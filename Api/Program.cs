@@ -20,7 +20,8 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme).AddJw
             new SymmetricSecurityKey(
                 Encoding.UTF8.GetBytes(builder.Configuration.GetSection("AppSettings:Token").Value!)),
         ValidateIssuer = false,
-        ValidateAudience = false
+        ValidateAudience = false,
+        ValidateLifetime = true
     };
 });
 
@@ -46,8 +47,8 @@ builder.Services.AddDbContext<AppDbContext>(options =>
 
 builder.Services.AddScoped<IProductRepository, ProductRepository>();
 builder.Services.AddScoped<IProductService, ProductService>();
-builder.Services.AddScoped<IExternalApiService, ExternalApiService>();
 builder.Services.AddScoped<IAuthService, AuthService>();
+builder.Services.AddScoped<DummyJsonService>();
 
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();

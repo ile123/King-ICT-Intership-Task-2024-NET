@@ -10,7 +10,7 @@ namespace Api.Controllers;
 
 [ApiController]
 [Route("api/[controller]")]
-public class ProductController(IProductService productService, IExternalApiService externalApiService, IMemoryCache memoryCache) : ControllerBase
+public class ProductController(IProductService productService, IMemoryCache memoryCache) : ControllerBase
 {
     /// <summary>Gets all products from the db</summary>  
     /// <returns>List of product dtos</returns>  
@@ -33,34 +33,6 @@ public class ProductController(IProductService productService, IExternalApiServi
         }
     }
 
-    /// <summary>Gets all products from a external api and stores them in the db</summary>  
-    /// <returns>A string that confirms that products where retrived from the external api and stored in the db</returns>  
-    /// <response code="200">If the products where fetched and stored in the db</response>  
-    /// <response code="500">If there was a error during the process of fetching the products or storing them in the db</response> 
-    [HttpGet("fetch-data-from-api")]
-    [Authorize(Policy = "AuthenticatedOnly")]
-    public async Task<ActionResult<ApiResponseDto<string>>> GetDataFromApi(
-        [FromQuery] string baseUrl = "",
-        [FromQuery] string endpoint = "")
-    {
-        try
-        {
-            var externalApiData = await externalApiService.GetDataFromApi(baseUrl, endpoint);
-            if (!externalApiData.Any())
-                throw new Exception("ERROR: Fetching data from a external API has failed!");
-            foreach (var productDto in externalApiData)
-            {
-                await productService.AddProduct(productDto);
-            }
-            return Ok(new ApiResponseDto<string>(true, "Data fetched successfully!", "Data stored successfully!"));
-        }
-        catch (Exception e)
-        {
-            Log.Error(e.Message);
-            return StatusCode(500, new ApiResponseDto<IEnumerable<ProductDto>>(false, e.Message, new List<ProductDto>()));
-        }
-    }
-
     /// <summary>Gets all products from the db by category and price(equal or less)</summary>  
     /// <returns>List of product dtos</returns>  
     /// <response code="200">If all products found</response>  
@@ -73,22 +45,8 @@ public class ProductController(IProductService productService, IExternalApiServi
     {
         try
         {
-            var cacheKey = $"ProductsByCategoryAndPrice_{category}_{price}";
-            if (memoryCache.TryGetValue(cacheKey, out List<Product>? cachedProducts))
-            {
-                return Ok(cachedProducts);
-            }
-
             var result = await productService.GetAllProductsByCategoryAndPrice(category, price);
             if (!result.Success) throw new Exception(result.Message);
-
-            var cacheOptions = new MemoryCacheEntryOptions
-            {
-                AbsoluteExpirationRelativeToNow = TimeSpan.FromMinutes(5),
-                SlidingExpiration = TimeSpan.FromMinutes(2)
-            };
-            memoryCache.Set(cacheKey, result, cacheOptions);
-
             return Ok(result);
         }
         catch (Exception e)
@@ -109,22 +67,8 @@ public class ProductController(IProductService productService, IExternalApiServi
     {
         try
         {
-            var cacheKey = $"ProductsByName_{name}";
-            if (memoryCache.TryGetValue(cacheKey, out List<Product>? cachedProducts))
-            {
-                return Ok(cachedProducts);
-            }
-
             var result = await productService.GetAllProductsByName(name);
             if (!result.Success) throw new Exception(result.Message);
-
-            var cacheOptions = new MemoryCacheEntryOptions
-            {
-                AbsoluteExpirationRelativeToNow = TimeSpan.FromMinutes(5),
-                SlidingExpiration = TimeSpan.FromMinutes(2)
-            };
-            memoryCache.Set(cacheKey, result, cacheOptions);
-
             return Ok(result);
         }
         catch (Exception e)
@@ -139,26 +83,11 @@ public class ProductController(IProductService productService, IExternalApiServi
     /// <response code="500">If there was a error during the process of fetching the product from the db</response> 
     [HttpGet("{productId:guid}")]
     [Authorize(Policy = "AuthenticatedOnly")]
-    public async Task<ActionResult<ApiResponseDto<IEnumerable<ProductDto>>>> GetAllProductsById(Guid productId)
+    public async Task<ActionResult<ApiResponseDto<ProductDto>>> GetProductById(Guid productId)
     {
-        try
-        {
-            var cacheKey = $"ProductById_{productId}";
-            if (memoryCache.TryGetValue(cacheKey, out List<Product>? cachedProducts))
-            {
-                return Ok(cachedProducts);
-            }
-
+        try{
             var result = await productService.GetProductById(productId);
             if (!result.Success) throw new Exception(result.Message);
-
-            var cacheOptions = new MemoryCacheEntryOptions
-            {
-                AbsoluteExpirationRelativeToNow = TimeSpan.FromMinutes(5),
-                SlidingExpiration = TimeSpan.FromMinutes(2)
-            };
-            memoryCache.Set(cacheKey, result, cacheOptions);
-
             return Ok(result);
         }
         catch (Exception e)

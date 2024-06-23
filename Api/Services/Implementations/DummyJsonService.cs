@@ -6,20 +6,17 @@ using Serilog;
 
 namespace Api.Services.Implementations;
 
-public class ExternalApiService(IHttpClientFactory httpClientFactory, IConfiguration configuration) : IExternalApiService
+public class DummyJsonService(IHttpClientFactory httpClientFactory) : IExternalApiService
 {
     public async Task<List<AddProductDto>> GetDataFromApi(string baseUrl, string endpoint)
     {
         try
         {
-            var apiBaseUrl = configuration.GetValue<string>("DataSources:" + baseUrl + ":" + "BaseUrl");
-            var apiEndpoint = configuration.GetValue<string>("DataSources:" + baseUrl + ":" + endpoint);
-
             var httpClient = httpClientFactory.CreateClient();
-            httpClient.BaseAddress = new Uri(apiBaseUrl);
+            httpClient.BaseAddress = new Uri("https://dummyjson.com/");
             httpClient.Timeout = TimeSpan.FromSeconds(30);
                 
-            var response = await httpClient.GetAsync(apiEndpoint);
+            var response = await httpClient.GetAsync("products");
             if (!response.IsSuccessStatusCode) return [];
             var jsonString = await response.Content.ReadAsStringAsync();
             var deserializedJson = JsonSerializer.Deserialize<Products>(jsonString);
@@ -33,7 +30,6 @@ public class ExternalApiService(IHttpClientFactory httpClientFactory, IConfigura
             Log.Error(e.Message);
             return await Task.FromResult(new List<AddProductDto>());
         }
-        
     }
 
     private class ProductJsonDto

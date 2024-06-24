@@ -8,16 +8,33 @@ namespace Api.Controllers;
 [Route("api/[controller]")]
 public class AuthController(IAuthService authService) : ControllerBase
 {
-    /// <summary>Generates and returns a JWT token</summary>  
+    /// <summary>Authenticates a user with the given request</summary>  
     /// <returns>JWT token</returns>
-    /// <remarks>
-    /// This is a simple authentication and authorization system,
-    /// it can be expanded upon in the future to be more secure and complex
-    /// </remarks>  
-    /// <response code="200">If JWT token was created successfully</response>  
-    [HttpPost("get-token")]
-    public ActionResult<ApiResponseDto<string>> GetToken()
+    /// <response code="200">If the user was authenticated successfully, then it returns a JWT token</response>  
+    [HttpPost("login")]
+    public async Task<ActionResult<ApiResponseDto<string>>> Login(LoginDto loginDto)
     {
-        return Ok(authService.GetToken());
+        return Ok(await authService.Login(loginDto));
+    }
+    
+    /// <summary>Authenticates a user with the given request</summary>  
+    /// <returns>JWT token</returns>
+    /// <response code="200">If the user was authenticated successfully, then it returns a JWT token</response>  
+    [HttpPost("register")]
+    public async Task<ActionResult<ApiResponseDto<string>>> Register(RegisterDto registerDto)
+    {
+        await authService.Register(registerDto);
+        return Ok(new ApiResponseDto<string>(true, "Registration complete!",
+            "User registration has been successful."));
+    }
+    
+    /// <summary>Creates test users</summary>  
+    /// <returns>String that confirms that the users where created</returns>
+    /// <response code="200">If the users where created</response>  
+    [HttpPost("create-test-users")]
+    public async Task<ActionResult<ApiResponseDto<string>>> CreateTestUsers() 
+    {
+        await authService.CreateTestUsers();
+        return Ok(new ApiResponseDto<string>(true, "Users created!", "Test users have been successfully created!"));
     }
 }

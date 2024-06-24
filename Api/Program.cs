@@ -11,6 +11,16 @@ using Serilog;
 
 var builder = WebApplication.CreateBuilder(args);
 
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("Cors", policy =>
+    {
+        policy.WithOrigins(builder.Configuration.GetSection("AllowedOrigins").Get<string[]>() ?? Array.Empty<string>())
+            .AllowAnyHeader()
+            .AllowAnyMethod();
+    });
+});
+
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme).AddJwtBearer(options =>
 {
     options.TokenValidationParameters = new TokenValidationParameters
@@ -20,14 +30,16 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme).AddJw
             new SymmetricSecurityKey(
                 Encoding.UTF8.GetBytes(builder.Configuration.GetSection("AppSettings:Token").Value!)),
         ValidateIssuer = false,
-        ValidateAudience = false,
-        ValidateLifetime = true
+        ValidateAudience = false
     };
 });
 
 builder.Services.AddAuthorizationBuilder()
-    .AddPolicy("AuthenticatedOnly", policy =>
-        policy.RequireAuthenticatedUser()
+    .AddPolicy("AdminRequired", policy =>
+        policy.RequireRole("Admin")
+)
+    .AddPolicy("AnyRoleRequired", policy => policy
+        .RequireRole("Admin", "User")
 );
 
 Log.Logger = new LoggerConfiguration()
@@ -46,6 +58,7 @@ builder.Services.AddDbContext<AppDbContext>(options =>
 });
 
 builder.Services.AddScoped<IProductRepository, ProductRepository>();
+builder.Services.AddScoped<IAuthRepository, AuthRepository>();
 builder.Services.AddScoped<IProductService, ProductService>();
 builder.Services.AddScoped<IAuthService, AuthService>();
 builder.Services.AddScoped<DummyJsonService>();
@@ -62,8 +75,6 @@ if (app.Environment.IsDevelopment())
     app.UseSwagger();
     app.UseSwaggerUI();
 }
-
-//app.UseSerilogRequestLogging();
 
 app.UseHttpsRedirection();
 

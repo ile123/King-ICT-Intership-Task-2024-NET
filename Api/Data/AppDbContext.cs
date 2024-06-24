@@ -7,4 +7,5 @@ public class AppDbContext(DbContextOptions options) : DbContext(options)
 {
     public DbSet<Product> Products => Set<Product>();
     public DbSet<Image> Images => Set<Image>();
+    public DbSet<User> Users => Set<User>();
 }

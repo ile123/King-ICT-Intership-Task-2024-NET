@@ -17,7 +17,7 @@ public class ProductController(IProductService productService, IMemoryCache memo
     /// <response code="200">If all products where found</response>  
     /// <response code="500">If there was a error during the process of fetching the products from the db</response> 
     [HttpGet]
-    [Authorize(Policy = "AuthenticatedOnly")]
+    [Authorize(Policy = "AnyRoleRequired")]
     public async Task<ActionResult<ApiResponseDto<IEnumerable<ProductDto>>>> GetAllProducts()
     {
         try
@@ -38,7 +38,7 @@ public class ProductController(IProductService productService, IMemoryCache memo
     /// <response code="200">If all products found</response>  
     /// <response code="500">If there was a error during the process of fetching the products from the db</response> 
     [HttpGet("category-and-price")]
-    [Authorize(Policy = "AuthenticatedOnly")]
+    [Authorize(Policy = "AnyRoleRequired")]
     public async Task<ActionResult<ApiResponseDto<IEnumerable<ProductDto>>>> GetAllProductsByCategoryAndPrice(
         [FromQuery] string category = "",
         [FromQuery] decimal price = 1000.0m)
@@ -61,7 +61,7 @@ public class ProductController(IProductService productService, IMemoryCache memo
     /// <response code="200">If all products found</response>  
     /// <response code="500">If there was a error during the process of fetching the products from the db</response> 
     [HttpGet("name")]
-    [Authorize(Policy = "AuthenticatedOnly")]
+    [Authorize(Policy = "AnyRoleRequired")]
     public async Task<ActionResult<ApiResponseDto<IEnumerable<ProductDto>>>> GetAllProductsByName(
         [FromQuery] string name = "")
     {
@@ -82,7 +82,7 @@ public class ProductController(IProductService productService, IMemoryCache memo
     /// <response code="200">If all products found</response>  
     /// <response code="500">If there was a error during the process of fetching the product from the db</response> 
     [HttpGet("{productId:guid}")]
-    [Authorize(Policy = "AuthenticatedOnly")]
+    [Authorize(Policy = "AnyRoleRequired")]
     public async Task<ActionResult<ApiResponseDto<ProductDto>>> GetProductById(Guid productId)
     {
         try{

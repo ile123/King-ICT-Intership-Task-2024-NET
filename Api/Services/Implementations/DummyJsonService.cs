@@ -8,7 +8,7 @@ namespace Api.Services.Implementations;
 
 public class DummyJsonService(IHttpClientFactory httpClientFactory) : IExternalApiService
 {
-    public async Task<List<AddProductDto>> GetDataFromApi(string baseUrl, string endpoint)
+    public async Task<List<AddProductDto>> GetDataFromApi()
     {
         try
         {
